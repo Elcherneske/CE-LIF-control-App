@@ -1,8 +1,13 @@
 package com.example.myapplicationforprojectversion1.model.model;
 
 import com.example.myapplicationforprojectversion1.model.device.BlueToothServiceConnection;
-import com.example.myapplicationforprojectversion1.model.service.ServerConnection;
+import com.example.myapplicationforprojectversion1.model.server.ServerConnection;
+import com.example.myapplicationforprojectversion1.view.Activities.Interface.UIHolder;
 import com.example.myapplicationforprojectversion1.view.ParameterClass.ParameterGenerator;
+
+import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.legacy.linear.LUDecomposition;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +28,9 @@ public class DataContainer implements DataProvider {
     private int kind = -1;//目前是哪种工作状态
     private final int pulse_threshold = 20;
 
+    //debug
+    private UIHolder uiHolder;
+
 
 
     //cont
@@ -31,8 +39,12 @@ public class DataContainer implements DataProvider {
         initialization();
     }
 
-    public DataContainer(String dir,ParameterGenerator parameter)
+    public DataContainer(String dir, ParameterGenerator parameter, UIHolder uiHolder)
     {
+        //debug
+        this.uiHolder = uiHolder;
+
+
         this.parameter = parameter;
         this.dir = dir;
 
@@ -80,7 +92,12 @@ public class DataContainer implements DataProvider {
     public List<ChartData> getData(int size)
     {
         //fetch items from connection
-        List<ChartData> newData = filtering(anti_pulse(deviceConnection.fetchAllData()));
+        List<ChartData> newData = anti_pulse(deviceConnection.fetchAllData());
+        int windowSize = newData.size() - 1;
+        if(windowSize % 2 == 0){
+            windowSize--;
+        }
+        newData = filtering(newData, windowSize, 3);
         if(serverConnection!=null && serverConnection.isConnected()){//把数据传输到服务器
             serverConnection.sendValues(newData);
         }
@@ -121,7 +138,12 @@ public class DataContainer implements DataProvider {
     public List<ChartData> getData(int size,int swift)
     {
         //fetch items from connection
-        List<ChartData> newData = filtering(anti_pulse(deviceConnection.fetchAllData()));
+        List<ChartData> newData = anti_pulse(deviceConnection.fetchAllData());
+        int windowSize = newData.size() - 1;
+        if(windowSize % 2 == 0){
+            windowSize--;
+        }
+        newData = filtering(newData, windowSize, 3);
         if(serverConnection!=null && serverConnection.isConnected()){//把数据传输到服务器
             serverConnection.sendValues(newData);
         }
@@ -197,6 +219,7 @@ public class DataContainer implements DataProvider {
         }
     }
 
+    //抗脉冲
     private List<ChartData> anti_pulse(List<ChartData> input){
         if(input.size()==0) return input;
         int previous;
@@ -216,42 +239,98 @@ public class DataContainer implements DataProvider {
         return input;
     }
 
-    private List<ChartData> filtering(List<ChartData> input){
-        if(input.size()==0) return input;
-        int previous;
-        double ratio = 0.5;
-        if(this.data.isEmpty()){
-            previous = 0;
+    //简单滤波
+//    private List<ChartData> filtering(List<ChartData> input){
+//        if(input.size()==0) return input;
+//        int previous;
+//        double ratio = 0.5;
+//        if(this.data.isEmpty()){
+//            previous = 0;
+//        }
+//        else{
+//            previous = this.data.get(this.data.size() - 1).getData();
+//        }
+//        for(int i = 0; i<input.size(); i++){
+//            int temp = input.get(i).getData();
+//            input.get(i).setData((int)(ratio * previous + (1-ratio) * temp));
+//            previous = temp;
+//        }
+//        return input;
+//    }
+
+    // 计算系数矩阵（滤波操作之一）
+    private double[][] computeCoefficients(int windowSize, int polynomialOrder) {
+        double[][] coefficients = new double[windowSize][polynomialOrder + 1];
+        int halfWindowSize = windowSize / 2;
+        for (int i = -halfWindowSize; i <= halfWindowSize; i++) {
+            for (int j = 0; j <= polynomialOrder; j++) {
+                coefficients[i + halfWindowSize][j] = Math.pow(i, j);
+            }
         }
-        else{
-            previous = this.data.get(this.data.size() - 1).getData();
-        }
-        for(int i = 0; i<input.size(); i++){
-            int temp = input.get(i).getData();
-            input.get(i).setData((int)(ratio * previous + (1-ratio) * temp));
-            previous = temp;
-        }
-        return input;
+
+        RealMatrix coeffMatrix = new Array2DRowRealMatrix(coefficients);
+        RealMatrix coeffTransMatrix = coeffMatrix.transpose();
+        RealMatrix coeffTransMultCoeff = coeffTransMatrix.multiply(coeffMatrix);
+        RealMatrix inverse = new LUDecomposition(coeffTransMultCoeff).getSolver().getInverse();
+        RealMatrix result = coeffMatrix.multiply(inverse.multiply(coeffTransMatrix));
+        return result.getData();
+        //return MatrixUtils.inverse(new Array2DRowRealMatrix(coefficients)).getData();
     }
 
-    /*
-    private List<ChartData> filtering(List<ChartData> input){
-        if(input.size()==0) return input;
-        int previous;
-        double ratio = 0.45;
-        if(this.data.isEmpty()){
-            previous = 0;
+    // 对数据进行滤波
+    private List<ChartData> filtering(List<ChartData> input, int windowSize, int polynomialOrder) {
+
+        int len = input.size();
+        double[] data = new double[len];
+        for(int i = 0; i<len; i++){
+            data[i] = (double)(input.get(i).getData());
         }
-        else{
-            previous = this.data.get(this.data.size() - 1).getData();
+
+        int n = data.length;
+        if(n <= windowSize || n < 3 || windowSize < 3) return input;
+
+        double[][] coefficients = computeCoefficients(windowSize, polynomialOrder);
+
+        int halfWindowSize = windowSize / 2;
+
+
+
+        double[] filteredData = new double[n];
+
+        for(int i = 0; i < halfWindowSize; i++){
+            double sum = 0.0;
+            for (int j = 0; j < 2 * halfWindowSize + 1; j++) {
+                sum += coefficients[i][j] * data[j];
+            }
+            filteredData[i] = sum;
         }
-        for(int i = 0; i<input.size(); i++){
-            int temp = input.get(i).getData();
-            input.get(i).setData((int)(ratio * previous + (1-ratio) * temp));
-            previous = temp;
+
+
+        for (int i = halfWindowSize; i < n - halfWindowSize; i++) {
+            double sum = 0.0;
+            for (int j = -halfWindowSize; j <= halfWindowSize; j++) {
+                sum += coefficients[halfWindowSize + 1][j + halfWindowSize] * data[i + j];
+            }
+            filteredData[i] = sum;
         }
-        return input;
+
+
+        for(int i = n - halfWindowSize; i < n; i++){
+            double sum = 0.0;
+            for (int j = 0; j < 2 * halfWindowSize + 1; j++) {
+                sum += coefficients[i - (n-windowSize)][j] * data[ n - windowSize + j];
+            }
+            filteredData[i] = sum;
+        }
+
+        List<ChartData> output = new ArrayList<>();
+        for(int i = 0; i < input.size(); i++){
+            ChartData item = input.get(i);
+            item.setData((int)(filteredData[i]));
+            output.add(item);
+        }
+
+        return output;
     }
-    */
 
 }

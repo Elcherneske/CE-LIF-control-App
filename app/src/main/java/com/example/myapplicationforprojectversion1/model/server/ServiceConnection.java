@@ -1,4 +1,4 @@
-package com.example.myapplicationforprojectversion1.model.service;
+package com.example.myapplicationforprojectversion1.model.server;
 
 import com.example.myapplicationforprojectversion1.model.model.ChartData;
 

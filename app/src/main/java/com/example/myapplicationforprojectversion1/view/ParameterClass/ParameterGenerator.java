@@ -4,7 +4,6 @@ public class ParameterGenerator {
     private CELIFParameter CELIF_parameter = null;
     private LIFParameter LIF_parameter = null;
     private int parameter_type;
-
     private static ParameterGenerator parameter;
 
     public static ParameterGenerator formInstance(CELIFParameter CELIF_parameter){
@@ -61,11 +60,25 @@ public class ParameterGenerator {
     }
 
 
+    //为了实现自动设置进样分离电压添加
+    public void setCELIF_parameter_voltage_1(int value){
+        if(CELIF_parameter != null){
+            this.CELIF_parameter.setVoltage_1(value);
+        }
+    }
+    public void setCELIF_parameter_voltage_2(int value){
+        if(CELIF_parameter != null){
+            this.CELIF_parameter.setVoltage_2(value);
+        }
+    }
+
+
+
+
+
+
 
     //private function
-
-
-
     //not allowed to form the object outside
     private ParameterGenerator(int kind, CELIFParameter CELIF_parameter)
     {

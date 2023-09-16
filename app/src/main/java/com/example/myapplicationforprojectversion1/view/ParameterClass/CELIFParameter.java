@@ -54,7 +54,21 @@ public class CELIFParameter implements Parameter{
     }
     public String getID(){return this.id;}
 
+    public int getVoltage_1(){
+        return this.voltage_1;
+    }
 
+    public int getVoltage_2() {
+        return this.voltage_2;
+    }
+
+    public void setVoltage_1(int voltage_1){
+        this.voltage_1 = voltage_1;
+    }
+
+    public void setVoltage_2(int voltage_2) {
+        this.voltage_2 = voltage_2;
+    }
 
     @Override
     public String formString()

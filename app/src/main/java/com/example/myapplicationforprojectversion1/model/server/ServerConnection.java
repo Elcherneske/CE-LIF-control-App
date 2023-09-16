@@ -1,12 +1,9 @@
-package com.example.myapplicationforprojectversion1.model.service;
+package com.example.myapplicationforprojectversion1.model.server;
 
 import com.example.myapplicationforprojectversion1.model.model.ChartData;
 import com.example.myapplicationforprojectversion1.view.ParameterClass.ParameterGenerator;
 
-import java.io.BufferedReader;
-
 import java.io.BufferedWriter;
-import java.io.InputStreamReader;
 
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;

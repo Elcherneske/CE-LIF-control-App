@@ -1,4 +1,4 @@
-package com.example.myapplicationforprojectversion1.model.device;
+package com.example.myapplicationforprojectversion1.model.device.car;
 
 public class BlueToothCarConnectionUtil {
     public final static String SERVICE_UUID = "0000ff26-0000-1000-8000-00805f9b34fb";

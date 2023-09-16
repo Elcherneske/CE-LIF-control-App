@@ -14,9 +14,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myapplicationforprojectversion1.R;
-import com.example.myapplicationforprojectversion1.model.device.BlueToothCarConnection;
 import com.example.myapplicationforprojectversion1.model.device.BlueToothServiceConnection;
-import com.example.myapplicationforprojectversion1.model.service.ServerConnection;
+import com.example.myapplicationforprojectversion1.model.server.ServerConnection;
 
 public class ConnectionActivity extends AppCompatActivity {
     private EditText deviceName;

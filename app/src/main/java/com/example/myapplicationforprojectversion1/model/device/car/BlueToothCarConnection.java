@@ -1,4 +1,4 @@
-package com.example.myapplicationforprojectversion1.model.device;
+package com.example.myapplicationforprojectversion1.model.device.car;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

@@ -8,8 +8,6 @@ import com.example.myapplicationforprojectversion1.view.Activities.Interface.UIH
 import java.util.List;
 
 public class DataPresenter {
-
-
     private UIHolder uiHolder;
     private DataProvider dataProvider;
     private final int default_size = 20000;
@@ -19,7 +17,7 @@ public class DataPresenter {
     //构造函数
     public DataPresenter(UIHolder uiHolder){
         this.uiHolder=uiHolder;
-        dataProvider = new DataContainer(uiHolder.provideDir(),uiHolder.provideParameter());
+        dataProvider = new DataContainer(uiHolder.provideDir(),uiHolder.provideParameter(),uiHolder);
     }
 
     public void getData()
@@ -38,12 +36,14 @@ public class DataPresenter {
         dataProvider.beginAll();
     }
 
+    //debug用
+    public void sendMessage(String message){this.uiHolder.showMessage(message);}
+
 
 
 
     //以下函数都是用于图表界面实时显示对应参数的设置
     public void setSwift(int swift){
-
         if(swift<0){
             this.swift = 0;
             return;
@@ -92,6 +92,5 @@ public class DataPresenter {
     public void setDefaultSize(){
         setSize(default_size);
     }
-
 
 }

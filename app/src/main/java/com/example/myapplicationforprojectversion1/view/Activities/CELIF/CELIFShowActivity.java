@@ -19,6 +19,7 @@ import com.example.myapplicationforprojectversion1.R;
 import com.example.myapplicationforprojectversion1.model.model.ChartData;
 import com.example.myapplicationforprojectversion1.model.device.BlueToothServiceConnection;
 import com.example.myapplicationforprojectversion1.presenter.DataPresenter;
+import com.example.myapplicationforprojectversion1.view.Activities.CELIF.generator.ConnectionActivity;
 import com.example.myapplicationforprojectversion1.view.Activities.Interface.UIHolder;
 import com.example.myapplicationforprojectversion1.view.ParameterClass.ParameterGenerator;
 import com.example.myapplicationforprojectversion1.view.customview.ChartView;
@@ -43,6 +44,33 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
     private String filename;
     private ParameterGenerator parameter;
     private GestureDetector chartViewGestureDetector;
+
+
+    //debug
+    private String message = "NONE";
+    public Handler myHandler = new Handler(){
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    Toast.makeText(CELIFShowActivity.this,message,Toast.LENGTH_SHORT).show();
+                    break;
+                case 2:
+                    Toast.makeText(CELIFShowActivity.this,message,Toast.LENGTH_SHORT).show();
+                    break;
+                //接下来的都是debug用
+                case 3:
+                    Toast.makeText(CELIFShowActivity.this,message,Toast.LENGTH_SHORT).show();
+                    break;
+                case 4:
+                    Toast.makeText(CELIFShowActivity.this,message,Toast.LENGTH_SHORT).show();
+                    break;
+                case 5:
+                    Toast.makeText(CELIFShowActivity.this,message,Toast.LENGTH_SHORT).show();
+
+            }
+        }
+    };
 
 
 
@@ -88,7 +116,9 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
     @Override
     public void showMessage(String message)
     {
-        Toast.makeText(CELIFShowActivity.this,message,Toast.LENGTH_SHORT).show();
+        this.message = message;
+        this.myHandler.sendEmptyMessage(1);
+        //Toast.makeText(CELIFShowActivity.this,message,Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -241,7 +271,7 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
                 dataSource.getData();
             }
         };
-        timer.schedule(task,0,20);
+        timer.schedule(task,0,1000);
     }
 
 
