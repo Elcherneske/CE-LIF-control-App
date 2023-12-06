@@ -1,11 +1,23 @@
 package com.example.myapplicationforprojectversion1.presenter;
 
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.example.myapplicationforprojectversion1.model.model.ChartData;
 import com.example.myapplicationforprojectversion1.model.model.DataContainer;
 import com.example.myapplicationforprojectversion1.model.model.DataProvider;
+import com.example.myapplicationforprojectversion1.view.Activities.CELIF.GeneratorActivity;
+import com.example.myapplicationforprojectversion1.view.Activities.CELIF.Views;
 import com.example.myapplicationforprojectversion1.view.Activities.Interface.UIHolder;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Random;
 
 public class DataPresenter {
     private UIHolder uiHolder;
@@ -17,12 +29,12 @@ public class DataPresenter {
     //构造函数
     public DataPresenter(UIHolder uiHolder){
         this.uiHolder=uiHolder;
-        dataProvider = new DataContainer(uiHolder.provideDir(),uiHolder.provideParameter(),uiHolder);
+        dataProvider = new DataContainer(uiHolder);
     }
 
     public void getData()
     {
-        List<ChartData> data = dataProvider.getData(size,swift);
+       List<ChartData> data = dataProvider.getData(size,swift);
         uiHolder.showData(data);
     }
 

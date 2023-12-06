@@ -8,8 +8,9 @@ import android.widget.Toast;
 import com.example.myapplicationforprojectversion1.model.Modbus.ModbusRtuMaster;
 import com.example.myapplicationforprojectversion1.model.model.ByteCircleBuffer;
 import com.example.myapplicationforprojectversion1.model.model.ChartData;
-import com.example.myapplicationforprojectversion1.view.Activities.CELIF.generator.ConnectionActivity;
-import com.example.myapplicationforprojectversion1.view.ParameterClass.ParameterGenerator;
+import com.example.myapplicationforprojectversion1.view.Activities.CELIF.Views;
+import com.example.myapplicationforprojectversion1.view.Activities.Interface.MessageShower;
+import com.example.myapplicationforprojectversion1.view.ParameterClass.Parameter;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -27,14 +28,16 @@ public class BlueToothServiceConnection implements DeviceConnection{
     private BluetoothSocket socket;
     private OutputStream out;
     private BufferedInputStream in_stream;
-    private boolean isConnect = false;
     private ModbusRtuMaster modbusRtuMaster;
     private int time = 0;
     private int time_step = 10;
     private Thread listen_thread;
     private Thread process_thread;
+    private Thread connect_thread;
+    private Thread reconnect_thread;
     private boolean thread_flag = false;
-    private ConnectionActivity activity; //connect界面，这个变量用于在connect界面debug
+    private boolean connect_flag = false;
+    private MessageShower activity;
     private List<ChartData> data = new ArrayList<ChartData>();//data的buffer，用于存储从底层程序传来的数据，等待上层程序fetch
     private ByteCircleBuffer circleBuffer = new ByteCircleBuffer(2048);//自己写的buffer类，用于快速处理数据
 
@@ -52,7 +55,7 @@ public class BlueToothServiceConnection implements DeviceConnection{
     }
 
     //DEBUG版的form
-    public static BlueToothServiceConnection formInstance(BluetoothAdapter adapter, String deviceInformation,ConnectionActivity activity){
+    public static BlueToothServiceConnection formInstance(BluetoothAdapter adapter, String deviceInformation, MessageShower activity){
         if(connection==null){
             synchronized (BlueToothServiceConnection.class){
                 if(connection==null){
@@ -69,40 +72,62 @@ public class BlueToothServiceConnection implements DeviceConnection{
     }
 
 
-
-
-
-
     public boolean isConnect()
     {
-        return isConnect;
+//        return this.socket.isConnected();
+        try {
+            byte[] test = {};
+            synchronized (this){
+                if(out == null){
+                    return false;
+                }
+                out.write(test);
+                out.flush();
+                connect_flag = true;
+            }
+            return true;
+        }
+        catch (IOException e) {
+            try {
+                synchronized (this){
+                    socket.close();
+                    connect_flag = false;
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            return false;
+        }
     }
 
+    public void setActivity(MessageShower activity){
+        this.activity = activity;
+    }
+
+
     //向底层驱动程序传输参数，用modbus方式编码
-    public void sendParameter(ParameterGenerator parameter){
-        synchronized (this.out){
-            List<byte[]> byteParameter = parameter.getParameter().formByteParameter(modbusRtuMaster);
-            for(int i=0;i<byteParameter.size();i++){
-                try {
+    public void sendParameter(Parameter parameter){
+        List<byte[]> byteParameter = parameter.formByteParameter(modbusRtuMaster);
+        for(int i=0;i<byteParameter.size();i++){
+            try {
+                synchronized (out){
                     out.write(byteParameter.get(i));
                     out.flush();
-                    //modbus需要回应，所以这里应该要sleep，但是设计硬件的时候切掉了回应，因此不需要接收
                 }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
+                //modbus需要回应，所以这里应该要sleep，但是设计硬件的时候切掉了回应，因此不需要接收
+            }
+            catch (Exception e) {
+                //this.activity.showMessage(e.getMessage());
             }
         }
+
     }
 
 
     public List<ChartData> fetchAllData()
     {
-        List<ChartData> result = new ArrayList<>();
+        List<ChartData> result = new ArrayList<>(data);
         synchronized (data){
-            for(int i=0;i<data.size();i++){
-                result.add(this.data.get(i));
-            }
             data.clear();
         }
         return result;
@@ -111,10 +136,11 @@ public class BlueToothServiceConnection implements DeviceConnection{
         List<ChartData> result = new ArrayList<>();
         synchronized (data){
             for(int i=0;i<size;i++){
-                if(i>=this.data.size()) break;
+                if(this.data.isEmpty()){
+                    break;
+                }
                 result.add(this.data.get(0));
                 this.data.remove(0);
-
             }
         }
         return result;
@@ -127,39 +153,50 @@ public class BlueToothServiceConnection implements DeviceConnection{
         data = new ArrayList<ChartData>();
         circleBuffer = new ByteCircleBuffer(2048);
         this.time = 0;
-
         //重新初始化thread
         this.thread_flag = true;
         initThread(); //这里需要重新刷新thread，否则第二次连接无法重新开启上一次的thread
         this.listen_thread.start();
         this.process_thread.start();
+        this.reconnect_thread.start();
 
         //send begin message to device
         try{
             byte[] item = modbusRtuMaster.writeSingleRegister(1, 9, 1);
             //TODO：这里还需要开启电源
-            out.write(item);
-            out.flush();
+            synchronized (out){
+                out.write(item);
+                out.flush();
+            }
         }
         catch (Exception e){
-
+            Toast.makeText(Views.getInstance().getShowActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+
     }
 
-    public void sendStopMessage()
-    {
+    public void sendStopMessage() {
         //send end message to device
         try{
             byte[] item = modbusRtuMaster.writeSingleRegister(1, 9, 2);
             //TODO：这里还得关闭电源
-            out.write(item);
-            out.flush();
+            synchronized (out){
+                out.write(item);
+                out.flush();
+            }
         }
         catch (Exception e){
-
+            e.printStackTrace();
+        }
+        this.thread_flag = false;//结束thread
+        try {
+            this.listen_thread.join();
+            this.process_thread.join();
+            this.reconnect_thread.join();
+        }catch (InterruptedException e){
+            e.printStackTrace();
         }
 
-        this.thread_flag = false;//结束thread
     }
 
 
@@ -178,21 +215,17 @@ public class BlueToothServiceConnection implements DeviceConnection{
     //private function
 
     //ctor
-    private BlueToothServiceConnection(BluetoothAdapter adapter,String deviceInformation)
-    {
+    private BlueToothServiceConnection(BluetoothAdapter adapter,String deviceInformation) {
         this.adapter = adapter;
         modbusRtuMaster = new ModbusRtuMaster();
         initBlueTooth(deviceInformation);
     }
-
-    private void initBlueTooth(String deviceInformation)
-    {
+    private void initBlueTooth(String deviceInformation) {
         initBlueToothAdapter();
         getDevice(deviceInformation);
         initSocket();
         initThread();
     }
-
     private void initBlueToothAdapter() {
         //获取蓝牙适配器
         try{
@@ -208,9 +241,7 @@ public class BlueToothServiceConnection implements DeviceConnection{
             e.printStackTrace();
         }
     }
-
-    private void getDevice(String deviceInformation)
-    {
+    private void getDevice(String deviceInformation) {
         try{
             Set<BluetoothDevice> deviceSet = this.adapter.getBondedDevices();
             List<BluetoothDevice> deviceList = new ArrayList<>();
@@ -232,37 +263,38 @@ public class BlueToothServiceConnection implements DeviceConnection{
         }
     }
 
-    private void initSocket()
-    {
-        new Thread(){
+    private void initSocket() {
+        this.connect_thread = new Thread(){
             @Override
             public void run(){
                 try {
-                    socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-                    socket.connect();
-                    out = socket.getOutputStream();
-                    in_stream = new BufferedInputStream(socket.getInputStream());
-                    isConnect = true;
+                    synchronized (BlueToothServiceConnection.class){
+                        socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
+                        socket.connect();
+                        out = socket.getOutputStream();
+                        in_stream = new BufferedInputStream(socket.getInputStream());
+                        connect_flag = true;
+                    }
                 }
                 catch (SecurityException | IOException e){
                     e.printStackTrace();
                 }
             }
-        }.start();
+        };
+        this.connect_thread.start();
     }
 
-    private void initThread()
-    {
+    private void initThread() {
         //接收数据的线程，接受到底层驱动程序发来的数据之后，装入this.circlebuffer中
         this.listen_thread = new Thread(){
             @Override
             public void run(){
-                byte[] listen_buff = new byte[1024];
+                byte[] listen_buff = new byte[2048];
                 int listen_len;
                 try{
-                    while(thread_flag){
-                        sleep(1);
-                        if((listen_len = in_stream.read(listen_buff,0,1024))!=1){
+                    while(thread_flag && connect_flag){
+                        sleep(10);
+                        if((listen_len = in_stream.read(listen_buff,0,2048))!=1){
                             synchronized (circleBuffer){
                                 circleBuffer.push(listen_buff,listen_len);
                             }
@@ -281,15 +313,12 @@ public class BlueToothServiceConnection implements DeviceConnection{
             public void run()
             {
                 byte[] process_buff;
-                boolean check;
                 int value;
                 int read_size;
-
-
                 try{
-                    while(thread_flag){
-                        sleep(5);
-                        check = false;
+                    while(thread_flag && connect_flag){
+                        sleep(10);
+                        boolean check = false;
                         synchronized (circleBuffer){
                             if(circleBuffer.get_size()<16){ //8个byte为一组数据，至少需要两组数据来实现数据头部对齐
                                 continue;
@@ -348,13 +377,54 @@ public class BlueToothServiceConnection implements DeviceConnection{
                                 }
                             }
                         }
-
                     }
                 }
                 catch (Exception e){
-                    e.printStackTrace();
+                    //activity.showMessage(e.getMessage());
                 }
             }
+        };
+
+
+        this.reconnect_thread = new Thread(){
+            @Override
+            public void run(){
+                while(thread_flag){
+                    try{
+                        sleep(10000);
+                    } catch (InterruptedException e) {
+                        //activity.showMessage(e.getMessage());
+                    }
+                    if(!isConnect()){
+                        //activity.showMessage("start reconnect");
+                        //先清理一下目前的thread
+                        try {
+                            listen_thread.join();
+                            process_thread.join();
+                        } catch (Exception e) {
+                            //activity.showMessage(e.getMessage());
+                        }
+                        initSocket();
+                        try {
+                            connect_thread.join();
+                            if(!isConnect()) continue;
+                            initThread();
+                            listen_thread.start();
+                            process_thread.start();
+                            reconnect_thread.start();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        break;
+                    }
+                    else{
+                        //activity.showMessage("connective");
+                    }
+                }
+                //activity.showMessage("reconnected");
+
+            }
+
         };
     }
 

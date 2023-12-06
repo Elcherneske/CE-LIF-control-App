@@ -16,12 +16,12 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.myapplicationforprojectversion1.R;
-import com.example.myapplicationforprojectversion1.model.model.ChartData;
 import com.example.myapplicationforprojectversion1.model.device.BlueToothServiceConnection;
+import com.example.myapplicationforprojectversion1.model.model.CSVFileUtil;
+import com.example.myapplicationforprojectversion1.model.model.ChartData;
+import com.example.myapplicationforprojectversion1.model.model.ParameterContainer;
 import com.example.myapplicationforprojectversion1.presenter.DataPresenter;
-import com.example.myapplicationforprojectversion1.view.Activities.CELIF.generator.ConnectionActivity;
 import com.example.myapplicationforprojectversion1.view.Activities.Interface.UIHolder;
-import com.example.myapplicationforprojectversion1.view.ParameterClass.ParameterGenerator;
 import com.example.myapplicationforprojectversion1.view.customview.ChartView;
 
 import java.io.File;
@@ -36,18 +36,17 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
     private Button shareButton;
     private Button Y_magnifyButton;
     private Button X_magnifyButton;
-    private Button frontButton;
+    private Button Y_clearButton;
+    private Button X_clearButton;
     private Button backButton;
     private ChartView chartView;
     private DataPresenter dataSource;
     private Timer timer;
-    private String filename;
-    private ParameterGenerator parameter;
     private GestureDetector chartViewGestureDetector;
 
 
     //debug
-    private String message = "NONE";
+    private String message ;
     public Handler myHandler = new Handler(){
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -80,6 +79,7 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         initialize();
     }
 
@@ -91,34 +91,11 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
     }
 
 
-
-    public String provideDir()
-    {
-        if(this.parameter == null) this.parameter = ParameterGenerator.getInstance();
-        this.filename = this.parameter.getParameter().getFileName();
-        File file = getFilesDir();//这个需要在activity中使用，因此需要特地生成这个函数
-        String fileName = "CELIF";
-        File appDir = new File(file, fileName);
-        if (!appDir.exists()) {
-            appDir.mkdirs();
-        }
-        File currentFile = new File(appDir, this.filename+".csv");
-        return currentFile.getAbsolutePath();
-    }
-
-    @Override
-    public ParameterGenerator provideParameter()
-    {
-        if(this.parameter == null) this.parameter = ParameterGenerator.getInstance();
-        return this.parameter;
-    }
-
     @Override
     public void showMessage(String message)
     {
         this.message = message;
         this.myHandler.sendEmptyMessage(1);
-        //Toast.makeText(CELIFShowActivity.this,message,Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -140,18 +117,17 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
 
     private void initialize()
     {
-
         initView();
 
-
         initListener();
+
+        Views.getInstance().setShowActivity(this);
 
     }
 
 
 
-    private void initView()
-    {
+    private void initView() {
         parameterButton = (Button) findViewById(R.id.parameterButton);
         beginButton = (Button) findViewById(R.id.beginButton);
         stopButton = (Button) findViewById(R.id.stopButton);
@@ -159,8 +135,9 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
         shareButton = (Button) findViewById(R.id.shareButton);
         Y_magnifyButton = (Button)findViewById(R.id.Y_magnifyButton);
         X_magnifyButton = (Button) findViewById(R.id.X_magnifyButton);
-        frontButton = (Button) findViewById(R.id.car_front_Button);
-        backButton = (Button) findViewById(R.id.car_back_Button);
+        Y_clearButton = (Button) findViewById(R.id.YC);
+        X_clearButton = (Button) findViewById(R.id.XC);
+        backButton = (Button) findViewById(R.id.MainBackButton);
 
         setButtonAble(parameterButton);
         setButtonUnable(beginButton);
@@ -168,12 +145,11 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
         setButtonUnable(shareButton);
         setButtonUnable(Y_magnifyButton);
         setButtonUnable(X_magnifyButton);
-        setButtonUnable(frontButton);
-        setButtonUnable(backButton);
+        setButtonUnable(Y_clearButton);
+        setButtonUnable(X_clearButton);
     }
 
-    private void initListener()
-    {
+    private void initListener() {
 
         parameterButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -191,9 +167,11 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
                 setButtonAble(stopButton);
                 setButtonAble(Y_magnifyButton);
                 setButtonAble(X_magnifyButton);
-                setButtonAble(frontButton);
-                setButtonAble(backButton);
+                setButtonAble(Y_clearButton);
+                setButtonAble(X_clearButton);
+
                 initPresenter();
+
                 beginGetData();
             }
         });
@@ -211,11 +189,29 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
             }
         });
 
+
+        this.stopButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // 在这里编写按钮按下时的操作
+                    // 例如改变按钮的背景颜色、播放音效等
+                    stopButton.setBackgroundColor(Color.BLUE);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    // 在这里编写按钮抬起时的操作
+                    // 例如恢复按钮的背景颜色、执行某个动作等
+                    stopButton.setBackgroundColor(Color.GREEN);
+                }
+                return false;
+            }
+        });
+
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Uri uri = FileProvider.getUriForFile(CELIFShowActivity.this, "com.example.myapplicationforprojectversion1.fileprovider", new File(provideDir()));
+                Uri uri = FileProvider.getUriForFile(CELIFShowActivity.this,
+                        "com.example.myapplicationforprojectversion1.fileprovider", CSVFileUtil.getInstance().getFile());
 
                 Intent share = new Intent(Intent.ACTION_SEND);
                 share.setType("text/plain");
@@ -240,6 +236,27 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
             }
         });
 
+        X_clearButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dataSource.setDefaultSize();
+            }
+        });
+
+        Y_clearButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                chartView.setDefaultRange();
+            }
+        });
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
 
         setChartViewGestureDetector();
 
@@ -255,11 +272,10 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
 
     private void initPresenter()
     {
-        this.parameter = ParameterGenerator.getInstance();
         this.dataSource = new DataPresenter(this);
 
-
         this.dataSource.beginAll();
+
         this.timer = new Timer();
     }
 
@@ -289,7 +305,6 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
 
     private void setChartViewGestureDetector()
     {
-
         GestureDetector.OnGestureListener listener = new GestureDetector.OnGestureListener() {
             @Override
             public boolean onDown(MotionEvent motionEvent) {

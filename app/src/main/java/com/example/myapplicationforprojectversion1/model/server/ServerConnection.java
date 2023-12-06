@@ -1,7 +1,7 @@
 package com.example.myapplicationforprojectversion1.model.server;
 
 import com.example.myapplicationforprojectversion1.model.model.ChartData;
-import com.example.myapplicationforprojectversion1.view.ParameterClass.ParameterGenerator;
+import com.example.myapplicationforprojectversion1.view.ParameterClass.Parameter;
 
 import java.io.BufferedWriter;
 
@@ -16,7 +16,7 @@ public class ServerConnection{
     private boolean isConnect = false;
     private final int port = 10023;
 
-    static private ServerConnection service;
+    static private ServerConnection service = null;
 
 
 
@@ -61,14 +61,14 @@ public class ServerConnection{
         }.start();
     }
 
-    public void sendParameter(ParameterGenerator parameter)
+    public void sendParameter(Parameter parameter)
     {
         new Thread(){
             @Override
             public void run()
             {
                 synchronized (out){
-                    String output = parameter.getParameter().formString();
+                    String output = parameter.formString();
                     out.println(output);
                 }
 
@@ -146,7 +146,10 @@ public class ServerConnection{
 
     public boolean isConnected()
     {
-        return this.isConnect;
+        if(socket != null){
+            return this.socket.isConnected();
+        }
+        return false;
     }
 
 

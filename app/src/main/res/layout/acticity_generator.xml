@@ -2,58 +2,73 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@drawable/background"
     android:orientation="vertical">
+
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="vertical">
-        <Button
-            android:layout_width="320dp"
-            android:layout_height="75dp"
-            android:layout_marginTop="50dp"
-            android:id="@+id/CELIF_Button"
-            android:text="CE Analysis"
-            android:textSize="30sp">
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        </Button>
-        <Button
-            android:layout_width="320dp"
-            android:layout_height="75dp"
-            android:layout_marginTop="50dp"
-            android:id="@+id/LIF_Button"
-            android:text="LIF SCANNER"
-            android:textSize="30sp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="仪器名称"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
 
-        </Button>
-        <Button
-            android:layout_width="320dp"
-            android:layout_height="75dp"
-            android:layout_marginTop="50dp"
-            android:id="@+id/Button3"
-            android:text="Flow Cytometer"
-            android:textSize="30sp">
+        <EditText
+            android:id="@+id/deviceName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
 
-        </Button>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="服务器IP"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/ServiceIP"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+
+
         <Button
-            android:layout_width="320dp"
-            android:layout_height="75dp"
-            android:layout_marginTop="50dp"
             android:id="@+id/ConnectionButton"
-            android:text="Connection"
-            android:textSize="30sp">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Connect"
+            android:textColor="#FFFFFF"
+            android:textSize="30sp" />
 
-        </Button>
         <Button
-            android:layout_width="320dp"
-            android:layout_height="75dp"
-            android:layout_marginTop="50dp"
-            android:id="@+id/Button4"
-            android:text="Opt regulation"
+            android:id="@+id/EnterButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Enter"
             android:textSize="30sp">
 
         </Button>
+
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/generateInfoText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="TextView" />
 
 </LinearLayout>

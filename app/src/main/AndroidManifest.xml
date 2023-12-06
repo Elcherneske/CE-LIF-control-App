@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -31,19 +31,7 @@
             android:screenOrientation="landscape">
         </activity>
         <activity
-            android:name=".view.Activities.LIF.LIFShowActivity"
-            android:screenOrientation="landscape">
-        </activity>
-        <activity
-            android:name=".view.Activities.LIF.LIFParameterActivity"
-            android:screenOrientation="landscape">
-        </activity>
-        <activity
-            android:name=".view.Activities.CELIF.generator.ConnectionActivity"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity
-            android:name=".view.Activities.CELIF.generator.GeneratorActivity"
+            android:name=".view.Activities.CELIF.GeneratorActivity"
             android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>

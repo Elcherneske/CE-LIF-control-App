@@ -2,16 +2,19 @@ package com.example.myapplicationforprojectversion1.presenter;
 
 import com.example.myapplicationforprojectversion1.model.model.ParameterContainer;
 import com.example.myapplicationforprojectversion1.model.model.ParameterHolder;
+import com.example.myapplicationforprojectversion1.view.Activities.Interface.MessageShower;
 import com.example.myapplicationforprojectversion1.view.Activities.Interface.ParameterProvider;
+import com.example.myapplicationforprojectversion1.view.ParameterClass.Parameter;
 
 public class ParameterPresenter {
-    private ParameterProvider provider;
     private ParameterHolder holder;
+
+    private ParameterProvider provider;
 
     public ParameterPresenter(ParameterProvider provider)
     {
-        this.provider= provider;
-        this.holder = new ParameterContainer(this);
+        this.provider = provider;
+        this.holder = new ParameterContainer(provider);
     }
 
 
@@ -19,7 +22,5 @@ public class ParameterPresenter {
     {
         holder.sendParameter(provider.getParameter());
     }
-
-    public void sendMessage(String message){this.provider.showMessage(message);}
 
 }

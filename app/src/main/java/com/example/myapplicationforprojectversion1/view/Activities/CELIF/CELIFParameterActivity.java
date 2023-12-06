@@ -3,37 +3,67 @@ package com.example.myapplicationforprojectversion1.view.Activities.CELIF;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.myapplicationforprojectversion1.R;
+import com.example.myapplicationforprojectversion1.model.device.BlueToothServiceConnection;
+import com.example.myapplicationforprojectversion1.model.model.CSVFileUtil;
 import com.example.myapplicationforprojectversion1.presenter.ParameterPresenter;
 import com.example.myapplicationforprojectversion1.view.Activities.Interface.ParameterProvider;
 import com.example.myapplicationforprojectversion1.view.ParameterClass.CELIFParameter;
-import com.example.myapplicationforprojectversion1.view.ParameterClass.ParameterGenerator;
+import com.example.myapplicationforprojectversion1.view.ParameterClass.Parameter;
+
+import java.io.File;
+import java.util.Calendar;
+
 public class CELIFParameterActivity extends AppCompatActivity implements ParameterProvider {
 
     private Button setButton;
     private Button backButton;
-    private EditText laserDivisorText;
-    private EditText laserPeriodText;
-    private EditText laserDutyText;
     private EditText samplingFrequency_PSR_Text;
     private EditText samplingFrequency_ARR_Text;
     private EditText magnify_1_Text;
     private EditText magnify_2_Text;
     private EditText voltage_1_Text;
     private EditText voltage_2_Text;
+    private SeekBar voltage_1_seekbar;
+    private SeekBar voltage_2_seekbar;
     private EditText nameText;//输出数据的文件名
-    private EditText IDText;//仪器ID
-    private ParameterGenerator parameter;
-    private ParameterPresenter presenter;
+    private TextView infoText;
+    private String message;
+    private CELIFParameter parameter;
 
 
+
+    public Handler myHandler = new Handler(){
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    Toast.makeText(CELIFParameterActivity.this, message, Toast.LENGTH_SHORT).show();
+                    break;
+                case 2:
+                    voltage_1_Text.setText(voltage_1_seekbar.getProgress() + "");
+                    voltage_2_Text.setText(voltage_2_seekbar.getProgress() + "");
+                    break;
+                case 3:
+                    Toast.makeText(CELIFParameterActivity.this, "1", Toast.LENGTH_SHORT).show();
+                    break;
+                case 4:
+                    Toast.makeText(CELIFParameterActivity.this, "2", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,17 +73,16 @@ public class CELIFParameterActivity extends AppCompatActivity implements Paramet
     }
 
     @Override
-    public ParameterGenerator getParameter()
+    public Parameter getParameter()
     {
         return this.parameter;
     }
 
     @Override
     public void showMessage(String message){
-        Toast.makeText(CELIFParameterActivity.this,message,Toast.LENGTH_SHORT).show();
+        this.message = message;
+        myHandler.sendEmptyMessage(1);
     }
-
-
 
 
     //private function
@@ -62,16 +91,15 @@ public class CELIFParameterActivity extends AppCompatActivity implements Paramet
     private void initialize(){
         initView();
         initListener();
-        initPresenter();
+        Views.getInstance().setParameterActivity(this);
     }
-
-
-
     private void initView(){
         initButton();
         initEditText();
+        this.voltage_1_seekbar = (SeekBar) findViewById(R.id.voltage_1_seekBar);
+        this.voltage_2_seekbar = (SeekBar) findViewById(R.id.voltage_2_seekBar);
+        this.infoText = (TextView) findViewById(R.id.ParameterInfoText);
     }
-
     private void initButton(){
         setButton = (Button) findViewById(R.id.setButton);
         backButton = (Button) findViewById(R.id.backButton);
@@ -79,9 +107,6 @@ public class CELIFParameterActivity extends AppCompatActivity implements Paramet
         setButtonAble(setButton);
     }
     private void initEditText(){
-        laserDivisorText = (EditText) findViewById(R.id.laserDivisorText);
-        laserPeriodText = (EditText)findViewById(R.id.laserPeriodText);
-        laserDutyText = (EditText) findViewById(R.id.laserDutyText);
 
         samplingFrequency_PSR_Text = (EditText) findViewById(R.id.samplingFrequency_PSR_Text);
         samplingFrequency_ARR_Text = (EditText)findViewById(R.id.samplingFrequency_ARR_Text);
@@ -93,28 +118,24 @@ public class CELIFParameterActivity extends AppCompatActivity implements Paramet
         voltage_2_Text = (EditText) findViewById(R.id.voltage_2_Text);
 
         nameText = (EditText) findViewById(R.id.nameText);
-        IDText = (EditText) findViewById(R.id.IDText);
 
-
-        laserDivisorText.setText("240");
-        laserPeriodText.setText("500");
-        laserDutyText.setText("250");
         samplingFrequency_PSR_Text.setText("2400");
         //samplingFrequency_PSR_Text.setFocusable(false);
         samplingFrequency_ARR_Text.setText("1000");
         //samplingFrequency_ARR_Text.setFocusable(false);
 
-
         magnify_1_Text.setText("1");
         magnify_2_Text.setText("1");
-
-
         //测试用，实际使用删去
-        voltage_1_Text.setText("100");
-        voltage_2_Text.setText("100");
+        voltage_1_Text.setText("0");
+        voltage_2_Text.setText("0");
 
-        nameText.setText("www");
-        IDText.setText("1");
+
+
+        // 获取当前时间
+        Calendar calendar = Calendar.getInstance();
+        nameText.setText(calendar.get(Calendar.YEAR) + "_" + (calendar.get(Calendar.MONTH) + 1) + "_" + calendar.get(Calendar.DAY_OF_MONTH)
+        + "_" + calendar.get(Calendar.HOUR_OF_DAY) + "_" + calendar.get(Calendar.MINUTE) + "_" + calendar.get(Calendar.SECOND));
     }
 
 
@@ -130,53 +151,96 @@ public class CELIFParameterActivity extends AppCompatActivity implements Paramet
                 finish();
             }
         });
-
         setButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(checkEmpty()==false){
-                    Toast.makeText(CELIFParameterActivity.this,"Error! Please input the parameter",Toast.LENGTH_LONG).show();
+                    showMessage("Error! Please input the parameter");
                 }
                 else{
-                    parameter = ParameterGenerator.formInstance(new CELIFParameter(
+                    File appDir = getFilesDir();//这个需要在activity中使用，因此需要特地生成这个函数
+                    File currentFile = new File(appDir,nameText.getText().toString().trim()+".csv");
+                    CSVFileUtil.formInstance(currentFile);
+
+                    parameter = new CELIFParameter(
                             Integer.valueOf(voltage_1_Text.getText().toString().trim()),
                             Integer.valueOf(voltage_2_Text.getText().toString().trim()),
-                            Integer.valueOf(laserDivisorText.getText().toString().trim()),
-                            Integer.valueOf(laserPeriodText.getText().toString().trim()),
-                            Integer.valueOf(laserDutyText.getText().toString().trim()),
                             Integer.valueOf(magnify_1_Text.getText().toString().trim()),
                             Integer.valueOf(magnify_2_Text.getText().toString().trim()),
                             Integer.valueOf(samplingFrequency_PSR_Text.getText().toString().trim()),
                             Integer.valueOf(samplingFrequency_ARR_Text.getText().toString().trim()),
-                            nameText.getText().toString().trim(),
-                            IDText.getText().toString().trim()));
-                    presenter.setParameter();
-                    Toast.makeText(CELIFParameterActivity.this,"Successfully set",Toast.LENGTH_LONG).show();
+                            nameText.getText().toString().trim());
+
+//                    ParameterPresenter presenter = new ParameterPresenter(CELIFParameterActivity.this);
+//
+//                    presenter.setParameter();
+
+                    //不知道为啥paramtercontainer会导致这个VIew闪退，所以干脆直接砍掉，直接操作蓝牙
+
+                    BlueToothServiceConnection.getInstance().sendParameter(parameter);
+                    new Thread(){
+                        @Override
+                        public void run(){
+                            BlueToothServiceConnection.getInstance().sendParameter(parameter);
+
+                            CSVFileUtil.getInstance().write(parameter.getInformation());
+
+                            try {
+                                sleep(20000);
+                            }
+                            catch (Exception e){}
+                            CELIFParameter copyParameter = new CELIFParameter(parameter);
+                            copyParameter.setVoltage_1(parameter.getVoltage_2());
+                            BlueToothServiceConnection.getInstance().sendParameter(copyParameter);
+
+                            showMessage("set parameter success");
+                        }
+                    }.start();
+
                     setButtonAble(backButton);
                 }
             }
         });
-
         setButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    // 在这里编写按钮按下时的操作
-                    // 例如改变按钮的背景颜色、播放音效等
                     setButton.setBackgroundColor(Color.BLUE);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    // 在这里编写按钮抬起时的操作
-                    // 例如恢复按钮的背景颜色、执行某个动作等
                     setButton.setBackgroundColor(Color.GREEN);
                 }
                 return false;
             }
         });
-    }
+        voltage_1_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+            }
 
-    private void initPresenter()
-    {
-        presenter = new ParameterPresenter(CELIFParameterActivity.this);
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                myHandler.sendEmptyMessage(2);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                myHandler.sendEmptyMessage(2);
+            }
+        });
+        voltage_2_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                myHandler.sendEmptyMessage(2);
+            }
+        });
     }
 
     private boolean checkEmpty()
@@ -184,15 +248,11 @@ public class CELIFParameterActivity extends AppCompatActivity implements Paramet
         boolean flag = true;
         if(voltage_1_Text.getText().toString().trim().equals("")) flag = false;
         if(voltage_2_Text.getText().toString().trim().equals("")) flag = false;
-        if(laserDivisorText.getText().toString().trim().equals("")) flag = false;
-        if(laserPeriodText.getText().toString().trim().equals("")) flag = false;
-        if(laserDutyText.getText().toString().trim().equals("")) flag = false;
         if(magnify_1_Text.getText().toString().trim().equals(""))flag = false;
         if(magnify_2_Text.getText().toString().trim().equals("")) flag = false;
         if(samplingFrequency_PSR_Text.getText().toString().trim().equals("")) flag = false;
         if(samplingFrequency_ARR_Text.getText().toString().trim().equals("")) flag = false;
         if(nameText.getText().toString().trim().equals("")) flag = false;
-        if(IDText.getText().toString().trim().equals("")) flag = false;
         return flag;
     }
 

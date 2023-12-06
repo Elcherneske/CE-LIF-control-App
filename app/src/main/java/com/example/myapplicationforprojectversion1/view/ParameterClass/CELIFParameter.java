@@ -8,27 +8,26 @@ import java.util.List;
 
 public class CELIFParameter implements Parameter{
     //电压输出1
-    private int voltage_1;//0号
+    private int voltage_1 = 0;//0号
     //电压输出2
-    private int voltage_2;//1号
+    private int voltage_2 = 0;//1号
     //激光器分频数
-    private int laser_divisor;//2号
+    private int laser_divisor = 240;//2号
     //激光器周期
-    private int laser_period;//3号
+    private int laser_period = 500;//3号
     //激光器占空比
-    private int laser_duty;//4号
+    private int laser_duty = 250;//4号
     //放大倍数
-    private int magnify_1;//5号
-    private int magnify_2;//6号
+    private int magnify_1 = 1;//5号
+    private int magnify_2 = 1;//6号
     //采样频率
-    private int sampling_frequency_PSR;//7号
-    private int sampling_frequency_ARR;//8号
+    private int sampling_frequency_PSR = 2400;//7号
+    private int sampling_frequency_ARR = 1000;//8号
     //文件名字
     private String name;
-    //仪器编号
-    private String id;
 
-    public CELIFParameter(int voltage_1,int voltage_2,int laser_divisor,int laser_duty,int laser_period,int magnify_1,int magnify_2,int sampling_frequency_PSR,int sampling_frequency_ARR,String name,String id)
+
+    public CELIFParameter(int voltage_1,int voltage_2,int laser_divisor,int laser_duty,int laser_period,int magnify_1,int magnify_2,int sampling_frequency_PSR,int sampling_frequency_ARR,String name)
     {
         this.voltage_1 = voltage_1;
         this.voltage_2 = voltage_2;
@@ -39,20 +38,38 @@ public class CELIFParameter implements Parameter{
         this.magnify_2 = magnify_2;
         this.sampling_frequency_PSR = sampling_frequency_PSR;
         this.sampling_frequency_ARR = sampling_frequency_ARR;
-
         this.name = name;
-        this.id = id;
+
     }
 
-    public String getId() {
-        return id;
+    public CELIFParameter(int voltage_1,int voltage_2,int magnify_1,int magnify_2,int sampling_frequency_PSR,int sampling_frequency_ARR,String name){
+        this.voltage_1 = voltage_1;
+        this.voltage_2 = voltage_2;
+        this.magnify_1 = magnify_1;
+        this.magnify_2 = magnify_2;
+        this.sampling_frequency_PSR = sampling_frequency_PSR;
+        this.sampling_frequency_ARR = sampling_frequency_ARR;
+        this.name = name;
     }
+
+    public CELIFParameter(CELIFParameter copy){
+        this.voltage_1 = copy.voltage_1;
+        this.voltage_2 = copy.voltage_2;
+        this.laser_divisor = copy.laser_divisor;
+        this.laser_duty = copy.laser_duty;
+        this.laser_period = copy.laser_period;
+        this.magnify_1 = copy.magnify_1;
+        this.magnify_2 = copy.magnify_2;
+        this.sampling_frequency_PSR = copy.sampling_frequency_PSR;
+        this.sampling_frequency_ARR = copy.sampling_frequency_ARR;
+        this.name = copy.name;
+    }
+
 
     public String getName()
     {
         return this.name;
     }
-    public String getID(){return this.id;}
 
     public int getVoltage_1(){
         return this.voltage_1;
@@ -83,8 +100,7 @@ public class CELIFParameter implements Parameter{
                 this.magnify_2 + " " +
                 this.voltage_1 + " " +
                 this.voltage_2 + " " +
-                this.name + " " +
-                this.id;
+                this.name ;
         return output;
     }
     @Override
@@ -100,8 +116,7 @@ public class CELIFParameter implements Parameter{
                 "magnify_2:" + "," + this.magnify_2 + "," +
                 "voltage_1:" + "," + this.voltage_1 + "," +
                 "voltage_2:" + "," + this.voltage_2 + "," +
-                "filename:" + "," +this.name + "," +
-                "device ID:" + "," +this.id + "\n";
+                "filename:" + "," +this.name + "\n";
         return output;
     }
 

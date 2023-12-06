@@ -1,15 +1,17 @@
 package com.example.myapplicationforprojectversion1.model.model;
 
+import android.widget.Toast;
+
 import com.example.myapplicationforprojectversion1.model.device.BlueToothServiceConnection;
 import com.example.myapplicationforprojectversion1.model.server.ServerConnection;
+import com.example.myapplicationforprojectversion1.view.Activities.CELIF.Views;
+import com.example.myapplicationforprojectversion1.view.Activities.Interface.MessageShower;
 import com.example.myapplicationforprojectversion1.view.Activities.Interface.UIHolder;
-import com.example.myapplicationforprojectversion1.view.ParameterClass.ParameterGenerator;
 
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.LUDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -21,15 +23,12 @@ public class DataContainer implements DataProvider {
     private int show_size = 10000;
     private BlueToothServiceConnection deviceConnection;
     private ServerConnection serverConnection;
-    private ParameterGenerator parameter;
-    private String dir;
+    private CSVFileUtil fileUtil;
+
     private FileOutputStream output;
     private ChartData empty = new ChartData(1,0);
-    private int kind = -1;//目前是哪种工作状态
-    private final int pulse_threshold = 20;
-
-    //debug
-    private UIHolder uiHolder;
+    private final int pulse_threshold = 20;//抗脉冲
+    private UIHolder activity;
 
 
 
@@ -39,43 +38,24 @@ public class DataContainer implements DataProvider {
         initialization();
     }
 
-    public DataContainer(String dir, ParameterGenerator parameter, UIHolder uiHolder)
+    public DataContainer(UIHolder activity)
     {
         //debug
-        this.uiHolder = uiHolder;
-
-
-        this.parameter = parameter;
-        this.dir = dir;
-
+        this.activity = activity;
+        this.fileUtil = CSVFileUtil.getInstance();
+        fileUtil.write("Time/ms" + "," + "Data" + "\n");
         initialization();
-
-        try {
-            output = new FileOutputStream(new File(dir));
-            String str = "Time/ms" + "," + "Data" + "," + parameter.getParameter().getInformation();
-            output.write(str.getBytes(StandardCharsets.UTF_8));
-            output.flush();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
 
     @Override
     public void stopAll()
     {
-        try {
-            output.close();//关闭文件流
-            deviceConnection.sendStopMessage();//传入device，表示结束数据接收,用于关闭电源
-            if(serverConnection!=null && serverConnection.isConnected()){
-                serverConnection.sendStopMessage();
-            }
+        fileUtil.close();
+        deviceConnection.sendStopMessage();//传入device，表示结束数据接收,用于关闭电源
+        if(serverConnection!=null && serverConnection.isConnected()){
+            serverConnection.sendStopMessage();
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
     @Override
     public void beginAll()
@@ -84,6 +64,7 @@ public class DataContainer implements DataProvider {
         if(serverConnection!=null && serverConnection.isConnected()){
             serverConnection.sendBeginMessage();
         }
+        Toast.makeText(Views.getInstance().getShowActivity(), "999", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -93,9 +74,12 @@ public class DataContainer implements DataProvider {
     {
         //fetch items from connection
         List<ChartData> newData = anti_pulse(deviceConnection.fetchAllData());
-        int windowSize = newData.size() - 1;
+        int windowSize = (newData.size() - 1)/2;
         if(windowSize % 2 == 0){
             windowSize--;
+        }
+        if(windowSize <= 0){
+            windowSize = 1;
         }
         newData = filtering(newData, windowSize, 3);
         if(serverConnection!=null && serverConnection.isConnected()){//把数据传输到服务器
@@ -139,9 +123,12 @@ public class DataContainer implements DataProvider {
     {
         //fetch items from connection
         List<ChartData> newData = anti_pulse(deviceConnection.fetchAllData());
-        int windowSize = newData.size() - 1;
+        int windowSize = (newData.size() - 1)/2;
         if(windowSize % 2 == 0){
             windowSize--;
+        }
+        if(windowSize <= 0){
+            windowSize = 1;
         }
         newData = filtering(newData, windowSize, 3);
         if(serverConnection!=null && serverConnection.isConnected()){//把数据传输到服务器
@@ -198,21 +185,15 @@ public class DataContainer implements DataProvider {
         for(int i=0;i<show_size;i++){
             this.show_data.add(empty);
         }
-        checkKind();
     }
 
-    private void checkKind()
-    {
-        this.kind = parameter.getKind();
-    }
 
 
     private void storeFile(ChartData data)
     {
         try {
             String str = data.getTime()+","+data.getData() + "\n";
-            output.write(str.getBytes(StandardCharsets.UTF_8));
-            output.flush();
+            this.fileUtil.write(str);
         }
         catch (Exception e) {
             e.printStackTrace();
