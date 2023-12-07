@@ -64,7 +64,6 @@ public class DataContainer implements DataProvider {
         if(serverConnection!=null && serverConnection.isConnected()){
             serverConnection.sendBeginMessage();
         }
-        Toast.makeText(Views.getInstance().getShowActivity(), "999", Toast.LENGTH_SHORT).show();
     }
 
 

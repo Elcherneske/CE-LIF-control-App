@@ -126,9 +126,11 @@ public class CELIFParameterActivity extends AppCompatActivity implements Paramet
 
         magnify_1_Text.setText("1");
         magnify_2_Text.setText("1");
+
         //测试用，实际使用删去
-        voltage_1_Text.setText("0");
-        voltage_2_Text.setText("0");
+
+        voltage_1_Text.setText("1000");
+        voltage_2_Text.setText("3300");
 
 
 
@@ -163,8 +165,8 @@ public class CELIFParameterActivity extends AppCompatActivity implements Paramet
                     CSVFileUtil.formInstance(currentFile);
 
                     parameter = new CELIFParameter(
-                            Integer.valueOf(voltage_1_Text.getText().toString().trim()),
-                            Integer.valueOf(voltage_2_Text.getText().toString().trim()),
+                            (int)(Integer.valueOf(voltage_1_Text.getText().toString().trim()) * 0.5688),
+                            (int)(Integer.valueOf(voltage_2_Text.getText().toString().trim()) * 0.5688),
                             Integer.valueOf(magnify_1_Text.getText().toString().trim()),
                             Integer.valueOf(magnify_2_Text.getText().toString().trim()),
                             Integer.valueOf(samplingFrequency_PSR_Text.getText().toString().trim()),
