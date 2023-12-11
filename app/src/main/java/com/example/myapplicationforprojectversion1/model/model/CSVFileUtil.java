@@ -15,12 +15,8 @@ public class CSVFileUtil {
 
 
     public static void formInstance(String dir){
-        if(instance == null){
-            synchronized (CSVFileUtil.class){
-                if(instance == null){
-                    instance = new CSVFileUtil(dir);
-                }
-            }
+        synchronized (CSVFileUtil.class){
+            instance = new CSVFileUtil(dir);
         }
     }
 
