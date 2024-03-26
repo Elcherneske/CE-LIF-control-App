@@ -24,6 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
             <Button
@@ -32,8 +33,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:enabled="false"
-                android:text="参数"
+                android:text="Para"
                 android:textSize="10sp"></Button>
 
             <Button
@@ -42,8 +44,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:enabled="false"
-                android:text="分享"
+                android:text="share"
                 android:textSize="10sp"></Button>
         </LinearLayout>
 
@@ -52,28 +55,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/beginButton"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:enabled="false"
-                android:text="开始"
+                android:text="start"
                 android:textSize="10sp"></Button>
 
             <Button
                 android:id="@+id/stopButton"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginLeft="5dp"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:enabled="false"
-                android:text="停止"
+                android:text="stop"
                 android:textSize="10sp"></Button>
         </LinearLayout>
 
@@ -81,7 +87,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
             <Button
@@ -90,6 +97,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:enabled="false"
                 android:text="Y+"
                 android:textSize="10sp"></Button>
@@ -101,6 +109,7 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="5dp"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:enabled="false"
                 android:text="X+"
                 android:textSize="10sp"></Button>
@@ -111,7 +120,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
             <Button
@@ -120,6 +130,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:enabled="false"
                 android:text="Y clear"
                 android:textSize="10sp"></Button>
@@ -131,6 +142,7 @@
                 android:layout_gravity="center"
                 android:layout_marginLeft="5dp"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:enabled="false"
                 android:text="X clear"
                 android:textSize="10sp"></Button>
@@ -139,7 +151,9 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
             <Button
@@ -147,6 +161,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@drawable/button2_up"
                 android:text="Back" />
         </LinearLayout>
 

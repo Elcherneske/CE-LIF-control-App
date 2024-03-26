@@ -151,11 +151,27 @@ public class GeneratorActivity extends AppCompatActivity implements MessageShowe
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     // 在这里编写按钮按下时的操作
                     // 例如改变按钮的背景颜色、播放音效等
-                    connectButton.setBackgroundColor(Color.BLUE);
+                    connectButton.setBackgroundResource(R.drawable.button_down);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     // 在这里编写按钮抬起时的操作
                     // 例如恢复按钮的背景颜色、执行某个动作等
-                    connectButton.setBackgroundColor(Color.GREEN);
+                    connectButton.setBackgroundResource(R.drawable.button_up);
+                }
+                return false;
+            }
+        });
+
+        this.enterButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // 在这里编写按钮按下时的操作
+                    // 例如改变按钮的背景颜色、播放音效等
+                    enterButton.setBackgroundResource(R.drawable.button_down);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    // 在这里编写按钮抬起时的操作
+                    // 例如恢复按钮的背景颜色、执行某个动作等
+                    enterButton.setBackgroundResource(R.drawable.button_up);
                 }
                 return false;
             }
@@ -230,13 +246,13 @@ public class GeneratorActivity extends AppCompatActivity implements MessageShowe
 
     private void setButtonUnable(Button button){
         button.setEnabled(false);
-        button.setBackgroundColor(Color.RED);
+        button.setBackgroundResource(R.drawable.button_invalid);
         button.setTextColor(Color.WHITE);
     }
     private void setButtonAble(Button button)
     {
         button.setEnabled(true);
-        button.setBackgroundColor(Color.GREEN);
+        button.setBackgroundResource(R.drawable.button_up);
         button.setTextColor(Color.WHITE);
     }
 

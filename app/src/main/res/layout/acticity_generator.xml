@@ -50,6 +50,7 @@
             android:layout_marginTop="20dp"
             android:text="Connect"
             android:textColor="#FFFFFF"
+            android:background="@drawable/button_up"
             android:textSize="30sp" />
 
         <Button
@@ -58,6 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="Enter"
+            android:background="@drawable/button_up"
             android:textSize="30sp">
 
         </Button>

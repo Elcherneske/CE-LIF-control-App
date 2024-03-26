@@ -125,7 +125,7 @@ public class DrawUtils {
         for(int i=0;i<data_size;i++){
             x = padding + (x_space)*i;
             if(data.get(i).getData()-data_min>0){
-                y = canvasHeight+padding-(((float)(data.get(i).getData())-(float) data_min)/(float)data_range)*((float)canvasHeight-2*(float)padding);
+                y = canvasHeight+padding-(((float)(data.get(i).getData())-(float) data_min)/(float)data_range)*((float)canvasHeight);
             }
             else{
                 y = canvasHeight+padding;

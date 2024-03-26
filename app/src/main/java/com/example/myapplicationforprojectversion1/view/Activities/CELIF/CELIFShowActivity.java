@@ -196,11 +196,11 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     // 在这里编写按钮按下时的操作
                     // 例如改变按钮的背景颜色、播放音效等
-                    stopButton.setBackgroundColor(Color.BLUE);
+                    stopButton.setBackgroundResource(R.drawable.button2_down);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     // 在这里编写按钮抬起时的操作
                     // 例如恢复按钮的背景颜色、执行某个动作等
-                    stopButton.setBackgroundColor(Color.GREEN);
+                    stopButton.setBackgroundResource(R.drawable.button2_up);
                 }
                 return false;
             }
@@ -293,13 +293,13 @@ public class CELIFShowActivity extends AppCompatActivity implements UIHolder {
 
     private void setButtonUnable(Button button){
         button.setEnabled(false);
-        button.setBackgroundColor(Color.RED);
+        button.setBackgroundResource(R.drawable.button2_invalid);
         button.setTextColor(Color.WHITE);
     }
     private void setButtonAble(Button button)
     {
         button.setEnabled(true);
-        button.setBackgroundColor(Color.GREEN);
+        button.setBackgroundResource(R.drawable.button2_up);
         button.setTextColor(Color.WHITE);
     }
 
